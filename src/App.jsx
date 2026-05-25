@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 function App() {
   const [url, setUrl] = useState('');
-  const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'error'
+  const [status, setStatus] = useState('idle');
 
   const manejarDescarga = async (e) => {
     e.preventDefault();
@@ -11,6 +11,7 @@ function App() {
     setStatus('loading');
 
     try {
+      // Conexión directa a tu servidor en Render
       const response = await fetch('https://descargador-backend-3awh.onrender.com/descargar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -43,7 +44,7 @@ function App() {
       <div style={styles.tarjeta}>
         <h1 style={styles.titulo}>Descargador Multimedios HQ</h1>
         <p style={styles.subtitulo}>
-          Descarga videos en máxima calidad de YouTube, TikTok, Facebook, Instagram y Twitter/X
+          Descarga videos en máxima calidad de YouTube, TikTok, Facebook, Instagram y X
         </p>
         
         <form onSubmit={manejarDescarga} style={styles.formulario}>
@@ -71,17 +72,17 @@ function App() {
 
         {status === 'loading' && (
           <p style={{ color: '#60a5fa', marginTop: '20px', fontSize: '14px' }}>
-            ⏳ Descargando y multiplexando.. Por favor espera.
+            ⏳ Descargando y procesando en la nube con FFmpeg...
           </p>
         )}
         {status === 'success' && (
           <p style={{ color: '#34d399', marginTop: '20px', fontSize: '14px' }}>
-            ✅ ¡Descargado! Revisa los archivos de tu dispositivo.
+            ✅ ¡Descarga completada con éxito!
           </p>
         )}
         {status === 'error' && (
           <p style={{ color: '#f87171', marginTop: '20px', fontSize: '14px' }}>
-            ❌ Hubo un problema al procesar el enlace.
+            ❌ Error: Revisa el enlace o intenta de nuevo.
           </p>
         )}
       </div>
@@ -89,7 +90,6 @@ function App() {
   );
 }
 
-// Estilos inteligentes con Flexbox responsivo
 const styles = {
   contenedor: {
     minHeight: '100vh',
@@ -104,7 +104,7 @@ const styles = {
   },
   tarjeta: {
     backgroundColor: '#1e293b',
-    padding: 'clamp(20px, 5vw, 40px)', // Ajusta el padding según el tamaño de la pantalla
+    padding: 'clamp(20px, 5vw, 40px)',
     borderRadius: '16px',
     boxShadow: '0 10px 25px -5px rgba(0,0,0,0.3)',
     width: '100%',
@@ -113,7 +113,7 @@ const styles = {
     boxSizing: 'border-box'
   },
   titulo: {
-    fontSize: 'clamp(20px, 6vw, 28px)', // Título responsivo
+    fontSize: 'clamp(20px, 6vw, 28px)',
     fontWeight: '700',
     marginBottom: '10px',
     color: '#f1f5f9'
@@ -126,7 +126,7 @@ const styles = {
   },
   formulario: {
     display: 'flex',
-    flexDirection: 'column', // Los elementos se apilan en vertical en móviles automáticamente
+    flexDirection: 'column',
     gap: '12px',
     width: '100%'
   },
