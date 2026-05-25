@@ -44,7 +44,7 @@ function App() {
       <div style={styles.tarjeta}>
         <h1 style={styles.titulo}>Descargador Multimedios HQ</h1>
         <p style={styles.subtitulo}>
-          Descarga videos en máxima calidad de YouTube, TikTok, Facebook, Instagram y X
+          Descarga videos en máxima calidad de TikTok e Instagram
         </p>
         
         <form onSubmit={manejarDescarga} style={styles.formulario}>
@@ -72,7 +72,7 @@ function App() {
 
         {status === 'loading' && (
           <p style={{ color: '#60a5fa', marginTop: '20px', fontSize: '14px' }}>
-            ⏳ Descargando y procesando en la nube con FFmpeg...
+            ⏳ Descargando y procesando en la nube...
           </p>
         )}
         {status === 'success' && (
