@@ -1,82 +1,106 @@
-import { useState } from 'react'
-import './App.css'
+import { useState } from 'react';
+import './App.css';
 
 function App() {
-  const [url, setUrl] = useState('')
-  const [videoData, setVideoData] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [url, setUrl] = useState('');
+  const [status, setStatus] = useState('idle'); // idle, loading, success, error
+  const [videoData, setVideoData] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  // IMPORTANTE: Cambia esta URL por la de tu backend en Render
-  // Ejemplo: 'https://mi-descargador-backend.onrender.com/api/descargar'
-  const BACKEND_URL = 'https://descargador-backend-3awh.onrender.com/descargar'
-
-  const handleDownload = async (e) => {
-    e.preventDefault();
-    if (!url) return;
-    
-    setLoading(true)
-    setError(null)
-    setVideoData(null)
+  const manejarDescarga = async () => {
+    if (!url.trim()) return;
+    setStatus('loading');
+    setErrorMessage('');
+    setVideoData(null);
 
     try {
-        const response = await fetch(`${BACKEND_URL}?url=${encodeURIComponent(url)}`)
-        const data = await response.json()
+      // Conexión a tu servidor en Render
+      const response = await fetch('https://descargador-backend-3awh.onrender.com/api/descargar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url.trim() })
+      });
 
-        if (response.ok) {
-            setVideoData(data)
-        } else {
-            setError(data.detail || "Error al obtener el video de la plataforma.")
-        }
-    } catch (error) {
-        console.error("Error:", error)
-        setError("Error de conexión con el backend. Revisa que tu servidor esté encendido.")
-    } finally {
-        setLoading(false)
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.detail || 'Error en el servidor al buscar el video');
+      }
+
+      // Procesamos la respuesta como JSON
+      const datos = await response.json();
+      setVideoData(datos);
+      setStatus('success');
+      setUrl('');
+      
+    } catch (err) {
+      console.error(err);
+      setErrorMessage(err.message);
+      setStatus('error');
     }
-  }
+  };
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '600px', margin: '0 auto', textAlign: 'center', fontFamily: 'sans-serif' }}>
-      <h1>Descargador Universal</h1>
-      <p>Pega enlaces de YouTube, X, TikTok, Facebook, etc.</p>
+    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto', textAlign: 'center', fontFamily: 'system-ui, sans-serif' }}>
+      <h2>Descargador Universal de Videos</h2>
+      <p>Soporta YouTube, X, TikTok y más.</p>
       
-      <form onSubmit={handleDownload} style={{ marginTop: '20px' }}>
-        <input
-          type="url"
-          placeholder="https://www.youtube.com/..."
-          value={url}
+      <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center', gap: '10px' }}>
+        <input 
+          type="text" 
+          placeholder="Pega el enlace del video aquí..." 
+          value={url} 
           onChange={(e) => setUrl(e.target.value)}
-          required
-          style={{ padding: '10px', width: '70%', borderRadius: '5px', border: '1px solid #ccc' }}
+          style={{ padding: '10px', width: '70%', borderRadius: '6px', border: '1px solid #ccc' }}
         />
         <button 
-          type="submit" 
-          disabled={loading} 
-          style={{ padding: '10px 15px', marginLeft: '10px', cursor: 'pointer', backgroundColor: '#0070f3', color: 'white', border: 'none', borderRadius: '5px' }}
+          onClick={manejarDescarga} 
+          disabled={status === 'loading'}
+          style={{ padding: '10px 20px', cursor: 'pointer', backgroundColor: '#0070f3', color: 'white', border: 'none', borderRadius: '6px' }}
         >
-          {loading ? 'Extrayendo...' : 'Buscar'}
+          {status === 'loading' ? 'Buscando...' : 'Buscar'}
         </button>
-      </form>
+      </div>
 
-      {error && <p style={{ color: 'red', marginTop: '20px' }}>{error}</p>}
+      {status === 'error' && (
+        <p style={{ color: '#d32f2f', backgroundColor: '#ffebee', padding: '10px', borderRadius: '6px' }}>
+          {errorMessage}
+        </p>
+      )}
 
-      {videoData && videoData.url_directa && (
-        <div style={{ marginTop: '30px', padding: '20px', border: '1px solid #eaeaea', borderRadius: '10px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
-          <h3>{videoData.titulo}</h3>
+      {status === 'success' && videoData && (
+        <div style={{ border: '1px solid #eaeaea', padding: '20px', borderRadius: '10px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', marginTop: '20px' }}>
+          <h3 style={{ marginTop: 0 }}>{videoData.titulo}</h3>
+          
           {videoData.miniatura && (
-            <img src={videoData.miniatura} alt="Miniatura" style={{ maxWidth: '100%', borderRadius: '8px', marginTop: '10px' }} />
+            <img 
+              src={videoData.miniatura} 
+              alt="Miniatura del video" 
+              style={{ maxWidth: '100%', borderRadius: '8px', margin: '15px 0' }} 
+            />
           )}
+          
           <br />
-          <a href={videoData.url_directa} target="_blank" rel="noopener noreferrer">
-            <button style={{ marginTop: '20px', padding: '12px 24px', backgroundColor: '#10B981', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold' }}>
-              Descargar Archivo MP4
-            </button>
+          <a 
+            href={videoData.url_directa} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-block',
+              padding: '12px 24px',
+              backgroundColor: '#10B981',
+              color: 'white',
+              textDecoration: 'none',
+              borderRadius: '6px',
+              fontWeight: 'bold',
+              marginTop: '10px'
+            }}
+          >
+            Descargar Archivo MP4
           </a>
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
